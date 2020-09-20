@@ -11,11 +11,13 @@ Solución al problema de N cuerpos por metodo momentum - energia
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-import 
+import sys
 from scipy import constants
 
 # Definimos algunas constantes importantes
 # Estas son las dimensionales con las que se trabajan
+
+scale = 1000 # tamaño del sistema
 
 kg = 10e23 # Dimensional de masa
 m = 10e9 # Dimensional de distancia
@@ -101,32 +103,21 @@ def Montecarlo (sis,pasos):
     
     # Parte 1, movimiento del sistema y calculo de la energia inicial
     # Primero hacemos una lista donde se van a almacenar las energias de las particulas
-    
    
     sisn = sis[:] # sistema nuevo, a ser probado 
-    E = [] # lista de energias
-    U = [] # lista de energias potenciales
     
     for i in range(pasos):
         
         # Dibujamos las particulas
         fig = plt.figure()
-
         ax = fig.add_subplot()
-            
-        E.clear()
-        U.clear()
         
         # Llenamos las listas U E, y ploteamos todas las particulas
         for p in sisn:         
             
             ax.scatter(p[0],p[1])
             
-            # llenamos la lista de energias
-            U.append(U_pot(p,sisn))
-            E.append(Ek(p)+U_pot(p,sisn))
-            
-        plt.axis([-5,5,-5,5])
+        plt.axis([-scale,scale,-scale,scale])
         plt.show
    
         # ahora tenemos que hacer montecarlo para nueva velocidades
@@ -134,10 +125,15 @@ def Montecarlo (sis,pasos):
         j = 0
         
         # Empieza el proceso aleatorio
-        for p in sisn:
+        for j in range(len(sisn)):
+            
+            p = sisn[j]
                   
-            Vo = np.sqrt(p[2]**2+p[3]**2) # Esta es la magnitud de la velocidad original   
-            ang1 = np.arctan(p[3]/p[2]) # Angulo original
+            Vo = np.sqrt(p[2]**2+p[3]**2) # Esta es la magnitud de la velocidad original
+            if p[2] == 0:
+                ang1 = np.pi*0.5*(p[3]/abs(p[3]))
+            else:
+                ang1 = np.arctan(p[3]/p[2]) # Angulo original
             Uo = U_pot(p,sis) # Energia potencial original
             Eo = Ek(p) # Energia cinetica original
             Lo = L_p(p) # Momentum angular original
@@ -146,12 +142,45 @@ def Montecarlo (sis,pasos):
             # Emepezamos con distribuciones uniformes
             
             pn = p[:] # copiamos la particula
+            cond = True
             
-            while            
-
+            while cond:
+                # Veamos la energia solamente
+                Vn = Vo + (Vo*0.25)*np.random.randn()                
+                ang2 = ang1 + (0.5*np.pi)*np.random.randn()
+                
+                vxn = Vn*np.cos(ang2)
+                vyn = Vn*np.sin(ang2)
+                
+                # Cono la nueva velocidad entonces ponemos las coordenadas de la nueva particula}
+                
+                pn[0] = p[0] + vxn
+                
+                pn[1] = p[1] + vyn
+                
+                pn[2] = vxn
+                
+                pn[3] = vyn
+                
+                Un = U_pot(pn,sis)
+                En = Ek(pn)
+                Ln = L_p(pn)
+                
+                dU = (Eo+Uo+Lo)/(En+Un+Ln)
+                
+                if (dU < 1.1 and dU > 0.9):
+                    cond = False
+                    p[0] = pn[0]
+                    p[1] = pn[1]
+                    p[2] = pn[2]
+                    p[3] = pn[3]
+                else:
+                    continue
+            
+                
         # Mostramos la barra de abance
         progress(i,pasos, status = 'Calculando:')
-        
+
     return sisn
 
 
@@ -161,13 +190,13 @@ def Montecarlo (sis,pasos):
 
 # Sistema de ejemplo, dos particulas estaticas en el eje x
 
-particulas.append([2,0,-0.01,0,1])
-particulas.append([-2,0,0.01,0,1])
+particulas.append([2,0,0,0.1,1])
+particulas.append([-2,0,0,-0.1,1])
 
+# Montecarlo(particulas,100)
 
-
-
-
+sistema7 = [[-400,0,0,15,800],[400,0,0,-15,800]]
+Montecarlo(sistema7,1000)
 
 
 
