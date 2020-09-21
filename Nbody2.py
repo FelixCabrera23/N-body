@@ -162,7 +162,7 @@ def Montecarlo (sis,pasos):
                 
                 pn[3] = vyn
                 
-                Un = U_pot(pn,sis)
+                Un = U_pot(pn,sis) # sis no se ha movido, la particula se duplica
                 En = Ek(pn)
                 Ln = L_p(pn)
                 
