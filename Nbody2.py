@@ -17,11 +17,12 @@ from scipy import constants
 # Definimos algunas constantes importantes
 # Estas son las dimensionales con las que se trabajan
 
-scale = 1000 # tamaño del sistema
+scale = 1000  # tamaño del sistema
 
 kg = 10e23 # Dimensional de masa
 m = 10e9 # Dimensional de distancia
-s = 10e4 # Dimensional de tiempo
+s = 10e2 # Dimensional de tiempo 
+# Se ha prbado optimo con s = 10e4
 
 Go = constants.value("Newtonian constant of gravitation")
 
@@ -56,7 +57,7 @@ def U_pot (part,P_list):
         r = np.sqrt((part[0]-p[0])**2+(part[1]-p[1])**2)
         if r == 0:
             continue
-        U = U - (G*part[4]*p[4])/(r)
+        U = U - (G*part[6]*p[6])/(r)
 
     return U
 
@@ -66,7 +67,7 @@ def Ek (part):
     Esta función calcula la energia cinetica respecto del origen para una particula
     """
 
-    k = (1/2)*part[4]*(part[2]**2+part[3]**2)
+    k = (1/2)*part[6]*(part[2]**2+part[3]**2)
 
     return k
 
@@ -75,7 +76,7 @@ def L_p (part):
     Esta función calcula el momentum angular de una particula dada respecto al origen
     """
 
-    L = part[4]*(part[0]*part[3]-part[2]*part[1])
+    L = part[6]*(part[0]*part[3]-part[2]*part[1])
 
     return L
 
@@ -125,61 +126,96 @@ def Montecarlo (sis,pasos):
 
         j = 0
 
-        # Empieza el proceso aleatorio
+        #copiamos la particula generando un nuevo sistema temporal
+        sist = []
+        Vn = []
+        ang1 = []
+        sist = sisn[:]
+        
+        # Variable de control momentum angular total
+        
+        Lto = 0
+        
+        # Este ciclo va a mover el sistema en sist y va a calcular las Vn y las va a guardar
         for j in range(len(sisn)):
 
             p = sisn[j] # Particula que vamos a tratar
 
-            if p[2] == 0:
-                ang1 = np.pi*0.5*(p[3]/abs(p[3]))
+            if (p[2] == 0 and p[3] != 0):
+                ang11 = np.pi*0.5*(p[3]/abs(p[3]))
+            elif (p[2]==0 and p[3] == 0):
+                ang11 = 0
             else:
-                ang1 = np.arctan(p[3]/p[2]) # Angulo original
-                
-            # Energias y momentum inicial    
+                ang11 = np.arctan(p[3]/p[2]) # Angulo original
+
+            # Energias y momentum inicial
             Uo = U_pot(p,sis) # Energia potencial original
             Eo = Ek(p) # Energia cinetica original
             Lo = L_p(p) # Momentum angular original
+            
+            Lto = Lto + Lo
+            
+            # Ahora empezamos con los calculos de la nueva posición
+            pn = sist[j]
+            
+            pn[0] = p[0] + p[2] + 0.5*p[4]
+            pn[1] = p[1] + p[3] + 0.5*p[5]
 
-            #copiamos la particula generando un nuevo sistema temporal
-            sist = []
-            sist = sisn[:]           
-            
-            # Movemos la particula de acuerdo a la velocidad anterior
-            pn = sist[j]            
-            pn[0] = p[0] + p[2]
-            pn[1] = p[1] + p[3]
-            
             # Calculamos la magnitud de la velocidad en base a la energia inicial
             Uf = U_pot(pn,sist)  #Energia potencial en la nueva posición
-            
-            Vn = np.sqrt((2/pn[4])*(Uo+Eo-Uf))
-                      
-            cond = True
 
-            while cond:
+            Vn1 = np.sqrt((2/pn[6])*(Uo+Eo-Uf))
+            
+            Vn.append(Vn1)
+            ang1.append(ang11)
+            
+            # Calculamos la aceleracion
+            ax = (Vn1*np.cos(ang11)-p[2])/s
+            ay = (Vn1*np.sin(ang11)-p[3])/s
+            
+            # Movemos la particula de acuerdo a la velocidad anterior
+
+            pn[4] = ax
+            pn[5] = ay
+
+        cond = True
+
+        # Aqui empieza el proceso aleatorio, ira por todas las particulas y solo aceptara el paso hasta el final
+        while cond:
+            k = 0
+            Ltf = 0
+            for pn in sist:
+                            
                 # Veamos la energia solamente
-                ang2 = ang1 + (0.5*np.pi)*np.random.randn()
-                # Empezamos moviendo la particula y asignandole la nueva velocidad         
-                
-                vxn = Vn*np.cos(ang2)
-                vyn = Vn*np.sin(ang2)
-                
+                ang2 = ang1[k] + (0.25*np.pi)*np.random.randn()
+                # Empezamos moviendo la particula y asignandole la nueva velocidad
+
+                vxn = Vn[k]*np.cos(ang2)
+                vyn = Vn[k]*np.sin(ang2)
+
                 pn[2] = vxn
 
                 pn[3] = vyn
 
                 Ln = L_p(pn)
+                
+                Ltf = Ltf + Ln
 
-                dU = (Lo)/(Ln) # Vamos a observar solamente la conservación de momentum angular
-
-                if (dU < 1.1 and dU > 0.9):
-                    cond = False
+            # Calculando condición de aceptación            
+            
+            dL = Lto/Ltf
+            if (dL < 1.0001 and dL > 0.9999):
+                cond = False
+                l = 0
+                for l in range(len(sisn)):
+                    p = sisn[l]
+                    pn = sist[l]
                     p[0] = pn[0]
                     p[1] = pn[1]
                     p[2] = pn[2]
                     p[3] = pn[3]
-                else:
-                    continue
+            else:
+                continue
 
 
         # Mostramos la barra de abance
@@ -188,17 +224,10 @@ def Montecarlo (sis,pasos):
     return sisn
 
 
-## Esta es una prueba para verificar el sistema de commits
-## Esta es la respuesta
+# Sistema de ejemplo, dos particulas orbitando el centro de masa
+scale = 4
+particulas.append([2,0,0,-0.1,0,0,1000])
+particulas.append([-2,0,0,0.1,0,0,1000])
+Montecarlo(particulas,300)
 
 
-
-# Sistema de ejemplo, dos particulas estaticas en el eje x
-
-particulas.append([2,0,0,0.1,1])
-particulas.append([-2,0,0,-0.1,1])
-
-# Montecarlo(particulas,100)
-
-sistema7 = [[-400,0,0,5,800],[400,0,0,-5,800]]
-Montecarlo(sistema7,1000)
