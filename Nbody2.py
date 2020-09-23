@@ -128,50 +128,49 @@ def Montecarlo (sis,pasos):
         # Empieza el proceso aleatorio
         for j in range(len(sisn)):
 
-            p = sisn[j]
+            p = sisn[j] # Particula que vamos a tratar
 
-            Vo = np.sqrt(p[2]**2+p[3]**2) # Esta es la magnitud de la velocidad original
             if p[2] == 0:
                 ang1 = np.pi*0.5*(p[3]/abs(p[3]))
             else:
                 ang1 = np.arctan(p[3]/p[2]) # Angulo original
+                
+            # Energias y momentum inicial    
             Uo = U_pot(p,sis) # Energia potencial original
             Eo = Ek(p) # Energia cinetica original
             Lo = L_p(p) # Momentum angular original
 
-            # En esta parte movemos aleatoriamente la particula
-            # Emepezamos con distribuciones uniformes
-
+            #copiamos la particula generando un nuevo sistema temporal
+            sist = []
+            sist = sisn[:]           
+            
+            # Movemos la particula de acuerdo a la velocidad anterior
+            pn = sist[j]            
+            pn[0] = p[0] + p[2]
+            pn[1] = p[1] + p[3]
+            
+            # Calculamos la magnitud de la velocidad en base a la energia inicial
+            Uf = U_pot(pn,sist)  #Energia potencial en la nueva posición
+            
+            Vn = np.sqrt((2/pn[4])*(Uo+Eo-Uf))
+                      
             cond = True
 
             while cond:
                 # Veamos la energia solamente
-                sist = []
-                sist = sisn[:]
-
-                pn = sist[j]
-                Vn = Vo + (Vo*0.25)*np.random.randn()
                 ang2 = ang1 + (0.5*np.pi)*np.random.randn()
-
+                # Empezamos moviendo la particula y asignandole la nueva velocidad         
+                
                 vxn = Vn*np.cos(ang2)
                 vyn = Vn*np.sin(ang2)
-
-                # Cono la nueva velocidad entonces ponemos las coordenadas de la nueva particula}
-
-                pn[0] = p[0] + vxn
-
-                pn[1] = p[1] + vyn
-
+                
                 pn[2] = vxn
 
                 pn[3] = vyn
 
-                Un = U_pot(pn,sist)
-
-                En = Ek(pn)
                 Ln = L_p(pn)
 
-                dU = (Eo+Uo+Lo)/(En+Un+Ln)
+                dU = (Lo)/(Ln) # Vamos a observar solamente la conservación de momentum angular
 
                 if (dU < 1.1 and dU > 0.9):
                     cond = False
