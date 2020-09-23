@@ -30,6 +30,7 @@ Go = constants.value("Newtonian constant of gravitation")
 G = Go*((kg*(s**2))/(m**3))
 
 random.seed(1999)
+np.random.seed(1002)
 
 # Primero calculamos la energia entre dos particulas
 # las particulas las vamos a almacenar en una lista, lo que sera más facil de
@@ -141,11 +142,14 @@ def Montecarlo (sis,pasos):
             # En esta parte movemos aleatoriamente la particula
             # Emepezamos con distribuciones uniformes
             
-            pn = p[:] # copiamos la particula
             cond = True
             
             while cond:
                 # Veamos la energia solamente
+                sist = []
+                sist = sisn[:]
+                
+                pn = sist[j]
                 Vn = Vo + (Vo*0.25)*np.random.randn()                
                 ang2 = ang1 + (0.5*np.pi)*np.random.randn()
                 
@@ -162,7 +166,7 @@ def Montecarlo (sis,pasos):
                 
                 pn[3] = vyn
                 
-                Un = U_pot(pn,sis)
+                Un = U_pot(pn,sist)
                 En = Ek(pn)
                 Ln = L_p(pn)
                 
@@ -195,7 +199,7 @@ particulas.append([-2,0,0,-0.1,1])
 
 # Montecarlo(particulas,100)
 
-sistema7 = [[-400,0,0,15,800],[400,0,0,-15,800]]
+sistema7 = [[-400,0,0,5,800],[400,0,0,-5,800]]
 Montecarlo(sistema7,1000)
 
 
