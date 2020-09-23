@@ -166,7 +166,11 @@ def Montecarlo (sis,pasos):
                 
                 pn[3] = vyn
                 
+<<<<<<< HEAD
                 Un = U_pot(pn,sist)
+=======
+                Un = U_pot(pn,sis) # sis no se ha movido, la particula se duplica
+>>>>>>> 1bc271e197f163d2736c4102c8506b5aa1c643b9
                 En = Ek(pn)
                 Ln = L_p(pn)
                 
