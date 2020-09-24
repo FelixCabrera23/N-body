@@ -21,7 +21,7 @@ scale = 1000  # tamaño del sistema
 
 kg = 10e23 # Dimensional de masa
 m = 10e9 # Dimensional de distancia
-s = 10e2 # Dimensional de tiempo 
+s = 10e4 # Dimensional de tiempo 
 # Se ha prbado optimo con s = 10e4
 
 Go = constants.value("Newtonian constant of gravitation")
@@ -109,20 +109,24 @@ def Montecarlo (sis,pasos):
     sisn = sis[:] # sistema nuevo, a ser probado
 
     for i in range(pasos):
-
+        ########################################
         # Dibujamos las particulas
-        fig = plt.figure()
-        ax = fig.add_subplot()
+        # fig = plt.figure()
+        # ax = fig.add_subplot()
 
         # Llenamos las listas U E, y ploteamos todas las particulas
-        for p in sisn:
+        # for p in sisn:
 
-            ax.scatter(p[0],p[1])
+        #     ax.scatter(p[0],p[1])
 
-        plt.axis([-scale,scale,-scale,scale])
-        plt.show
+        # plt.axis([-scale,scale,-scale,scale])
+        # plt.show
+        #############################################
 
-        # ahora tenemos que hacer montecarlo para nueva velocidades
+        ###############################################
+        # Guardamos a un archivo los resultados
+        
+        file = open('posisiones.dat','w')
 
         j = 0
 
@@ -138,8 +142,11 @@ def Montecarlo (sis,pasos):
         
         # Este ciclo va a mover el sistema en sist y va a calcular las Vn y las va a guardar
         for j in range(len(sisn)):
-
+        
             p = sisn[j] # Particula que vamos a tratar
+            
+            # Al inicio de cada ciclo guardamos con el formato de cada particula su posisción
+            file.write('%f, %f' % (p[0],p[1]))
 
             if (p[2] == 0 and p[3] != 0):
                 ang11 = np.pi*0.5*(p[3]/abs(p[3]))
@@ -177,7 +184,8 @@ def Montecarlo (sis,pasos):
 
             pn[4] = ax
             pn[5] = ay
-
+        
+        file.write('\n')
         cond = True
 
         # Aqui empieza el proceso aleatorio, ira por todas las particulas y solo aceptara el paso hasta el final
@@ -187,7 +195,7 @@ def Montecarlo (sis,pasos):
             for pn in sist:
                             
                 # Veamos la energia solamente
-                ang2 = ang1[k] + (0.25*np.pi)*np.random.randn()
+                ang2 = ang1[k] + (0.5*np.pi)*np.random.randn()
                 # Empezamos moviendo la particula y asignandole la nueva velocidad
 
                 vxn = Vn[k]*np.cos(ang2)
@@ -225,9 +233,21 @@ def Montecarlo (sis,pasos):
 
 
 # Sistema de ejemplo, dos particulas orbitando el centro de masa
-scale = 4
-particulas.append([2,0,0,-0.1,0,0,1000])
-particulas.append([-2,0,0,0.1,0,0,1000])
-Montecarlo(particulas,300)
+# este sistema funciona mejor con s = 10e2
+# scale = 4
+# particulas.append([2,0,0,-0.1,0,0,1000])
+# particulas.append([-2,0,0,0.1,0,0,1000])
+# Montecarlo(particulas,300)
+
+# Sistemas para comparar con el modelo de newton
+
+# sistema de particulas orbitando el centro de masa
+# scale = 800
+# sistema7 = [[-400,0,0,0.12,0,0,80000000],[400,0,0,-0.12,0,0,80000000]]
+# Montecarlo(sistema7,3000)
+
+# Sistema sol tierra
+sistema1 = [[0,0,0,0,0,0,19891000],[149.597870691,0,0,0.2978,0,0,59.7]]
+Montecarlo(sistema1,1000)
 
 
