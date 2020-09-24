@@ -75,7 +75,6 @@ def L_p (part):
     """
     Esta función calcula el momentum angular de una particula dada respecto al origen
     """
-
     L = part[6]*(part[0]*part[3]-part[2]*part[1])
 
     return L
@@ -107,6 +106,10 @@ def Montecarlo (sis,pasos):
     # Primero hacemos una lista donde se van a almacenar las energias de las particulas
 
     sisn = sis[:] # sistema nuevo, a ser probado
+    
+    ###############################################
+    # Guardamos a un archivo los resultados 
+    file = open('posisiones.dat','w')
 
     for i in range(pasos):
         ########################################
@@ -123,10 +126,9 @@ def Montecarlo (sis,pasos):
         # plt.show
         #############################################
 
-        ###############################################
-        # Guardamos a un archivo los resultados
+
         
-        file = open('posisiones.dat','w')
+        
 
         j = 0
 
@@ -146,7 +148,7 @@ def Montecarlo (sis,pasos):
             p = sisn[j] # Particula que vamos a tratar
             
             # Al inicio de cada ciclo guardamos con el formato de cada particula su posisción
-            file.write('%f, %f' % (p[0],p[1]))
+            file.write('%f, %f, ' % (p[0],p[1]))
 
             if (p[2] == 0 and p[3] != 0):
                 ang11 = np.pi*0.5*(p[3]/abs(p[3]))
@@ -210,8 +212,8 @@ def Montecarlo (sis,pasos):
                 Ltf = Ltf + Ln
 
             # Calculando condición de aceptación            
-            
             dL = Lto/Ltf
+                
             if (dL < 1.0001 and dL > 0.9999):
                 cond = False
                 l = 0
@@ -228,7 +230,7 @@ def Montecarlo (sis,pasos):
 
         # Mostramos la barra de abance
         progress(i,pasos, status = 'Calculando:')
-
+    file.close()
     return sisn
 
 
