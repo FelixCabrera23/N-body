@@ -17,12 +17,17 @@ from scipy import constants
 # Definimos algunas constantes importantes
 # Estas son las dimensionales con las que se trabajan
 
+###################################################
 scale = 1000  # tamaño del sistema
 
 kg = 10e23 # Dimensional de masa
 m = 10e9 # Dimensional de distancia
-s = 10e4 # Dimensional de tiempo 
+s = 10 # Dimensional de tiempo 
 # Se ha prbado optimo con s = 10e4
+
+Grafica = False
+
+#####################################################
 
 Go = constants.value("Newtonian constant of gravitation")
 
@@ -113,17 +118,19 @@ def Montecarlo (sis,pasos):
 
     for i in range(pasos):
         ########################################
-        # Dibujamos las particulas
-        # fig = plt.figure()
-        # ax = fig.add_subplot()
+        if Grafica:
+            
+            # Dibujamos las particulas
+            fig = plt.figure()
+            ax = fig.add_subplot()
 
-        # Llenamos las listas U E, y ploteamos todas las particulas
-        # for p in sisn:
+            # Llenamos las listas U E, y ploteamos todas las particulas
+            for p in sisn:
 
-        #     ax.scatter(p[0],p[1])
+                ax.scatter(p[0],p[1])
 
-        # plt.axis([-scale,scale,-scale,scale])
-        # plt.show
+            plt.axis([-scale,scale,-scale,scale])
+            plt.show
         #############################################
 
 
@@ -210,8 +217,13 @@ def Montecarlo (sis,pasos):
                 Ln = L_p(pn)
                 
                 Ltf = Ltf + Ln
+                
+                k +=1
 
-            # Calculando condición de aceptación            
+            # Calculando condición de aceptación     
+            
+            if (Ltf == 0): continue
+            
             dL = Lto/Ltf
                 
             if (dL < 1.0001 and dL > 0.9999):
@@ -244,12 +256,13 @@ def Montecarlo (sis,pasos):
 # Sistemas para comparar con el modelo de newton
 
 # sistema de particulas orbitando el centro de masa
-# scale = 800
-# sistema7 = [[-400,0,0,0.12,0,0,80000000],[400,0,0,-0.12,0,0,80000000]]
-# Montecarlo(sistema7,3000)
+scale = 800
+sistema7 = [[-400,0,0,0.12,0,0,80000000],[400,0,0,-0.12,0,0,80000000]]
+Montecarlo(sistema7,3000)
 
 # Sistema sol tierra
-sistema1 = [[0,0,0,0,0,0,19891000],[149.597870691,0,0,0.2978,0,0,59.7]]
-Montecarlo(sistema1,1000)
+# scale = 300
+# sistema1 = [[0,0,0,0,0,0,19891000],[149.597870691,0,0,0.2978,0,0,59.7]]
+# Montecarlo(sistema1,1000)
 
 
