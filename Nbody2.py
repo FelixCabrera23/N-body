@@ -22,7 +22,7 @@ scale = 1000  # tamaño del sistema
 
 kg = 10e23 # Dimensional de masa
 m = 10e9 # Dimensional de distancia
-s = 10 # Dimensional de tiempo 
+s = 10e4 # Dimensional de tiempo
 # Se ha prbado optimo con s = 10e4
 
 Grafica = False
@@ -111,15 +111,15 @@ def Montecarlo (sis,pasos):
     # Primero hacemos una lista donde se van a almacenar las energias de las particulas
 
     sisn = sis[:] # sistema nuevo, a ser probado
-    
+
     ###############################################
-    # Guardamos a un archivo los resultados 
+    # Guardamos a un archivo los resultados
     file = open('posisiones.dat','w')
 
     for i in range(pasos):
         ########################################
         if Grafica:
-            
+
             # Dibujamos las particulas
             fig = plt.figure()
             ax = fig.add_subplot()
@@ -134,8 +134,8 @@ def Montecarlo (sis,pasos):
         #############################################
 
 
-        
-        
+
+
 
         j = 0
 
@@ -144,18 +144,19 @@ def Montecarlo (sis,pasos):
         Vn = []
         ang1 = []
         sist = sisn[:]
-        
+
         # Variable de control momentum angular total
-        
+
         Lto = 0
-        
+
         # Este ciclo va a mover el sistema en sist y va a calcular las Vn y las va a guardar
         for j in range(len(sisn)):
-        
+
             p = sisn[j] # Particula que vamos a tratar
-            
+
             # Al inicio de cada ciclo guardamos con el formato de cada particula su posisción
-            file.write('%f, %f, ' % (p[0],p[1]))
+            if (np.mod(i,100)==0):
+                file.write('%f      %f      ' % (p[0],p[1]))
 
             if (p[2] == 0 and p[3] != 0):
                 ang11 = np.pi*0.5*(p[3]/abs(p[3]))
@@ -168,12 +169,12 @@ def Montecarlo (sis,pasos):
             Uo = U_pot(p,sis) # Energia potencial original
             Eo = Ek(p) # Energia cinetica original
             Lo = L_p(p) # Momentum angular original
-            
+
             Lto = Lto + Lo
-            
+
             # Ahora empezamos con los calculos de la nueva posición
             pn = sist[j]
-            
+
             pn[0] = p[0] + p[2] + 0.5*p[4]
             pn[1] = p[1] + p[3] + 0.5*p[5]
 
@@ -181,20 +182,21 @@ def Montecarlo (sis,pasos):
             Uf = U_pot(pn,sist)  #Energia potencial en la nueva posición
 
             Vn1 = np.sqrt((2/pn[6])*(Uo+Eo-Uf))
-            
+
             Vn.append(Vn1)
             ang1.append(ang11)
-            
+
             # Calculamos la aceleracion
             ax = (Vn1*np.cos(ang11)-p[2])/s
             ay = (Vn1*np.sin(ang11)-p[3])/s
-            
+
             # Movemos la particula de acuerdo a la velocidad anterior
 
             pn[4] = ax
             pn[5] = ay
-        
-        file.write('\n')
+
+        if (np.mod(i,100)==0):
+            file.write('\n')  # Salta el espacio entre datos guardados
         cond = True
 
         # Aqui empieza el proceso aleatorio, ira por todas las particulas y solo aceptara el paso hasta el final
@@ -202,7 +204,7 @@ def Montecarlo (sis,pasos):
             k = 0
             Ltf = 0
             for pn in sist:
-                            
+
                 # Veamos la energia solamente
                 ang2 = ang1[k] + (0.5*np.pi)*np.random.randn()
                 # Empezamos moviendo la particula y asignandole la nueva velocidad
@@ -215,17 +217,17 @@ def Montecarlo (sis,pasos):
                 pn[3] = vyn
 
                 Ln = L_p(pn)
-                
+
                 Ltf = Ltf + Ln
-                
+
                 k +=1
 
-            # Calculando condición de aceptación     
-            
+            # Calculando condición de aceptación
+
             if (Ltf == 0): continue
-            
+
             dL = Lto/Ltf
-                
+
             if (dL < 1.0001 and dL > 0.9999):
                 cond = False
                 l = 0
@@ -258,11 +260,9 @@ def Montecarlo (sis,pasos):
 # sistema de particulas orbitando el centro de masa
 scale = 800
 sistema7 = [[-400,0,0,0.12,0,0,80000000],[400,0,0,-0.12,0,0,80000000]]
-Montecarlo(sistema7,3000)
+Montecarlo(sistema7,100000)
 
 # Sistema sol tierra
 # scale = 300
 # sistema1 = [[0,0,0,0,0,0,19891000],[149.597870691,0,0,0.2978,0,0,59.7]]
 # Montecarlo(sistema1,1000)
-
-
