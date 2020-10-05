@@ -19,7 +19,7 @@ posiciones = np.loadtxt('posisiones.dat')
 x,y,x1,y1 = zip(*posiciones)
 
 
-scale = 1500
+scale = 4
 
 def configuracion ():
 
